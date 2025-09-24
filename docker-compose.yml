@@ -1,0 +1,52 @@
+services:
+  app:
+    container_name: todo-app
+    build: ./
+    image: todo-app:v1
+    ports:
+      - 80:3000
+    restart: always
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: example
+      MYSQL_DB: todo
+    networks:
+      todo-net:
+        ipv4_address: 192.168.110.5
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  db:
+    container_name: todo-db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: todo
+    ports:
+      - 3306:3306
+    networks:
+      todo-net:
+        ipv4_address: 192.168.110.4
+    volumes:
+      - todo-db:/var/lib/mysql
+
+volumes:
+  todo-db:
+
+networks:
+  todo-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.110.0/26
+          gateway: 192.168.110.1
